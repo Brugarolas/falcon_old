@@ -97,22 +97,22 @@ TEST_F(FutexTest, thread_counter)
 
 TEST_F(FutexTest, perf_test_futex_trio)
 {
-   performance_test(m_futex, 10000000, 3, 30);
+   performance_test(m_futex, 10000, 3, 30);
 }
 
 TEST_F(FutexTest, perf_test_yield_trio)
 {
-   performance_test(m_yield_futex, 10000000, 3, 30);
+   performance_test(m_yield_futex, 10000, 3, 30);
 }
 
 TEST_F(FutexTest, perf_test_sl_trio)
 {
-   performance_test(m_sl_futex, 10000000, 3, 30);
+   performance_test(m_sl_futex, 10000, 3, 30);
 }
 
 TEST_F(FutexTest, perf_test_mutex_trio)
 {
-   performance_test(m_mutex, 10000000, 3, 30);
+   performance_test(m_mutex, 10000, 3, 30);
 }
 
 
@@ -120,22 +120,22 @@ TEST_F(FutexTest, perf_test_mutex_trio)
 
 TEST_F(FutexTest, perf_test_futex_contention)
 {
-   performance_test(m_futex, 10000000, 4, 0);
+   performance_test(m_futex, 10000, 4, 0);
 }
 
 TEST_F(FutexTest, perf_test_yield_contention)
 {
-   performance_test(m_yield_futex, 10000000, 4, 0);
+   performance_test(m_yield_futex, 10000, 4, 0);
 }
 
 TEST_F(FutexTest, perf_test_sl_contention)
 {
-   performance_test(m_sl_futex, 10000000, 4, 0);
+   performance_test(m_sl_futex, 10000, 4, 0);
 }
 
 TEST_F(FutexTest, perf_test_mutex_contention)
 {
-   performance_test(m_mutex, 10000000, 4, 0);
+   performance_test(m_mutex, 10000, 4, 0);
 }
 
 
@@ -143,22 +143,22 @@ TEST_F(FutexTest, perf_test_mutex_contention)
 
 TEST_F(FutexTest, perf_test_futex_non_contention)
 {
-   performance_test(m_futex, 1000000, 10, 1000);
+   performance_test(m_futex, 1000, 10, 1000);
 }
 
 TEST_F(FutexTest, perf_test_yield_non_contention)
 {
-   performance_test(m_yield_futex, 1000000, 10, 1000);
+   performance_test(m_yield_futex, 1000, 10, 1000);
 }
 
 TEST_F(FutexTest, perf_test_sl_non_contention)
 {
-   performance_test(m_sl_futex, 1000000, 10, 1000);
+   performance_test(m_sl_futex, 1000, 10, 1000);
 }
 
 TEST_F(FutexTest, perf_test_mutex_non_contention)
 {
-   performance_test(m_mutex, 1000000, 10, 1000);
+   performance_test(m_mutex, 1000, 10, 1000);
 }
 FALCON_TEST_MAIN
 

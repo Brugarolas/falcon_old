@@ -21,8 +21,7 @@
 
 using namespace falcon;
 
-class FutexTest: public falcon::testing::TestCase
-{
+class FutexTest: public falcon::testing::TestCase {
 public:
    mutable Futex<0> m_futex;
    mutable Futex<1> m_yield_futex;

@@ -19,7 +19,7 @@
 #include "../../include/falcon/singleton.h"
 
 
-namespace Falcon {
+namespace falcon {
 Singleton<std::string> theString;
 
 FALCON_TEST(Compiler, Smoke)

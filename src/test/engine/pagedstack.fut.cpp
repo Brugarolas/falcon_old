@@ -21,7 +21,7 @@ Released under Apache 2.0 License.
 
 #include <iostream>
 
-class PagedStackTest: public Falcon::testing::TestCase
+class PagedStackTest: public falcon::testing::TestCase
 {
 public:
    struct SomeStruct {
@@ -36,7 +36,8 @@ public:
    };
 
    using datatype = std::variant<int, std::string, SomeStruct>;
-   using PagedStack = Falcon::PagedStack<datatype>;
+   // Usinga mutex to check for deadlocks.
+   using PagedStack = falcon::PagedStack<datatype, std::allocator, std::mutex>;
    PagedStack m_stack{4,2};
 
    void SetUp() {}
@@ -177,7 +178,7 @@ TEST_F(PagedStackTest, double_push)
 
 TEST_F(PagedStackTest, simple_emplace)
 {
-   Falcon::PagedStack<SomeStruct> emplacer;
+   falcon::PagedStack<SomeStruct> emplacer;
 
    emplacer.push_emplace(1, "Hello world");
 
@@ -191,7 +192,7 @@ TEST_F(PagedStackTest, simple_emplace)
 
 TEST_F(PagedStackTest, double_emplace)
 {
-   Falcon::PagedStack<SomeStruct> emplacer;
+   falcon::PagedStack<SomeStruct> emplacer;
 
    emplacer.push_emplace(0, "Hello world");
    emplacer.push_emplace(1, "Hello again");
@@ -202,6 +203,20 @@ TEST_F(PagedStackTest, double_emplace)
 
    EXPECT_EQ(1, top.alpha );
    EXPECT_STREQ("Hello again", top.beta);
+
+}
+
+TEST_F(PagedStackTest, top)
+{
+   falcon::PagedStack<SomeStruct> emplacer;
+
+   emplacer.push_emplace(0, "Hello world");
+   EXPECT_FALSE(emplacer.empty());
+   emplacer.top({1, "Changed"});
+   const SomeStruct& top = emplacer.top();
+
+   EXPECT_EQ(1, top.alpha );
+   EXPECT_STREQ("Changed", top.beta);
 
 }
 
@@ -422,6 +437,89 @@ TEST_F(PagedStackTest, reverse_const_iterator)
          m_stack.crbegin(), m_stack.crend());
 }
 
+TEST_F(PagedStackTest, sync_iterator)
+{
+   m_stack.push(1,2,3,4,5);
+   int i = 5;
+   for(auto iter = m_stack.sync_begin(); iter != m_stack.sync_end(); ++iter) {
+      datatype j;
+      iter.get(j);
+      EXPECT_EQ(i--, std::get<int>(j));
+   }
+
+   EXPECT_EQ(0, i);
+}
+
+TEST_F(PagedStackTest, sync_iterator_shrink)
+{
+   size_t blocks, depth, curBlock, curData;
+   // this test checks if the reverse iterator resists stack modification.
+   m_stack.push(1, 2, 3, 4, 5, "one", "two", "three");
+   {
+      auto si = m_stack.sync_begin();
+      datatype one, two, three;
+      m_stack.pop(three, two, one);
+      EXPECT_EQ("three", std::get<std::string>(three));
+      EXPECT_EQ("two", std::get<std::string>(two));
+      EXPECT_EQ("one", std::get<std::string>(one));
+
+      datatype svalue;
+      si.get(svalue); EXPECT_EQ(5, std::get<int>(svalue)); ++si;
+      si.get(svalue); EXPECT_EQ(4, std::get<int>(svalue)); ++si;
+      si.get(svalue); EXPECT_EQ(3, std::get<int>(svalue)); ++si;
+
+      datatype five, four;
+      m_stack.pop(five, four);
+      EXPECT_EQ(5, std::get<int>(five));
+      EXPECT_EQ(4, std::get<int>(four));
+
+      // The shrink-to-fit request will be fulfilled later.
+      m_stack.shrink_to_fit();
+      m_stack.getStats(blocks, depth, curBlock, curData);
+      EXPECT_EQ(blocks, 2);
+
+      int i = 2;
+      for(; si != m_stack.sync_end(); ++si) {
+         datatype j;
+         si.get(j);
+         EXPECT_EQ(i--, std::get<int>(j));
+      }
+      EXPECT_EQ(0, i);
+   }
+
+   m_stack.getStats(blocks, depth, curBlock, curData);
+   EXPECT_EQ(1, blocks);
+}
+
+
+TEST_F(PagedStackTest, sync_iterator_jump_base)
+{
+   // this test checks if the reverse iterator resists stack modification.
+   for(int p = 0; p <= 16; ++p) {
+      m_stack.push(p);
+   }
+
+   auto si = m_stack.sync_begin();
+   int i = 16;
+   datatype svalue;
+
+   // jump two blocks.
+   for(; i >= 8; --i) {
+      si.get(svalue); EXPECT_EQ(i, std::get<int>(svalue)); ++si;
+   }
+
+   // discard one block
+   m_stack.discard(5);
+   // but we should still be in synch
+   si.get(svalue); EXPECT_EQ(7, std::get<int>(svalue)); ++si;
+
+   //Now discard the current block
+   m_stack.discard(8);
+   // we expect to jump and have the new top
+   si.get(svalue); EXPECT_EQ(3, std::get<int>(svalue)); ++si;
+   si.get(svalue); EXPECT_EQ(3, std::get<int>(m_stack.top())); ++si;
+}
+
 
 TEST_F(PagedStackTest, from_top)
 {
@@ -581,7 +679,7 @@ TEST_F(PagedStackTest, allocator_smoke)
    SharedMem dataAlloc;
    SharedMem pageAlloc;
 
-   using dstack = Falcon::PagedStack<int, TestAllocator>;
+   using dstack = falcon::PagedStack<int, TestAllocator>;
    {
       auto testalloc = dstack(4,2,
             dstack::allocator_type(&pageAlloc, &dataAlloc));
@@ -603,7 +701,7 @@ TEST_F(PagedStackTest, allocator)
    SharedMem dataAlloc;
    SharedMem pageAlloc;
 
-   using dstack = Falcon::PagedStack<std::string, TestAllocator>;
+   using dstack = falcon::PagedStack<std::string, TestAllocator>;
    {
       auto testalloc = dstack(4,2, TestAllocator<dstack::value_type>(&pageAlloc, &dataAlloc));
 

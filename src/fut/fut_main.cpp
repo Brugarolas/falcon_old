@@ -19,7 +19,7 @@
 extern "C" {
 	int main(int argc, char* argv[]) {
 		assert(argc > 0);
-		return ::Falcon::testing::UnitTest::singleton()->main(argc, argv);
+		return ::falcon::testing::UnitTest::singleton()->main(argc, argv);
 	}
 }
 

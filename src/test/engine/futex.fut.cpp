@@ -19,10 +19,9 @@
 #include <thread>
 #include <vector>
 
-using namespace Falcon;
+using namespace falcon;
 
-class FutexTest: public Falcon::testing::TestCase
-{
+class FutexTest: public falcon::testing::TestCase {
 public:
    mutable Futex<0> m_futex;
    mutable Futex<1> m_yield_futex;

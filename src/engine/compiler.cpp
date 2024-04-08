@@ -16,7 +16,7 @@
 
 #include <falcon/engine/compiler.h>
 
-namespace Falcon {
+namespace falcon {
 Code Compiler::compile(std::istream& input) noexcept
 {
 	std::string value;

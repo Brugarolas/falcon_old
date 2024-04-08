@@ -152,6 +152,3 @@ private:
 }
 
 #endif /* _FALCON_ITEM_H_ */
-
-/* end of item.h */
-

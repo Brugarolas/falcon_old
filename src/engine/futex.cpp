@@ -1,29 +1,23 @@
 /*****************************************************************************
   FALCON2 - The Falcon Programming Language
-  FILE: compiler.cpp
+  FILE: futex.cpp
 
-  Falcon2 Source code compiler
+  Lightweight non-blocking mutex
   -------------------------------------------------------------------
   Author: Giancarlo Niccolai
-  Begin : Sun, 17 Feb 2019 13:48:59 +0000
-  Touch : Sun, 17 Feb 2019 14:17:30 +0000
+  Begin : Fri, 12 Apr 2019 19:19:08 +0100
+  Touch : Fri, 12 Apr 2019 19:19:08 +0100
 
   -------------------------------------------------------------------
   (C) Copyright 2019 The Falcon Programming Language
   Released under Apache 2.0 License.
 ******************************************************************************/
 
-
-#include <falcon/engine/compiler.h>
+#include <falcon/futex.h>
 
 namespace falcon {
-Code Compiler::compile(std::istream& input) noexcept
-{
-	std::string value;
-	input >> value;
-	return Code(value, 1);
+std::atomic<unsigned int> RFutex::s_count{0};
+thread_local unsigned int RFutex::s_thread_id{0};
 }
 
-}
-
-/* end of compiler.cpp */
+/* end of futex.cpp */
